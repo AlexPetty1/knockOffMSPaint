@@ -4,6 +4,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include <SFML/System.hpp>
+#include <set>
 
 using namespace sf;
 
@@ -57,12 +58,15 @@ class GridSquare{
 class UndoSystem{
 
     std::vector<std::vector<GridSquareSave>> saves;
+    std::set<std::pair<int, int>> squaresInSave;
+    
 
     int backSave;           //marks furthest you can go back
     int currentSave;        //marks current save your on in array
     int frontSave;          //marks furthest you can go forward
-    int amountOfSaves;
-    int* sizeSavesArray;
+    int amountOfSaves;      //amount of saves stored
+    int* sizeSavesArray;    //save size of each save array, 
+                            //      saves overwrite previous saves
 
 
     public:
@@ -100,6 +104,12 @@ class Grid{
 
         //changes the color of a specific square
         void drawSquare(int xIndex, int yIndex, Selector* selector, UndoSystem* undoSystem);
+        void drawSquareColor(int xIndex, int yIndex, Color newColor, UndoSystem* undoSystem);
+        Color getColor(int xIndex, int yIndex);
+
+
+        void flood(int xIndex, int yIndex, Color oldColor, 
+            Color newColor, UndoSystem* UndoSystem);
 
         void display(RenderWindow* window);
 };

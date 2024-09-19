@@ -73,10 +73,14 @@ UndoSystem::UndoSystem(int amountOfSaves){
 
 void UndoSystem::printSystem(){
 
+    int max = 20;
     for(int i = 0; i < this->saves.size(); i++){
-        
         std::cout << "Save: " << i << " \n";
         for(int j = 0; j < this->saves[i].size(); j++){
+            if(i == max){
+                break;
+            }
+
             GridSquareSave save = this->saves[i][j];
             std::cout << save.x << " " << save.y << " " << save.color.toInteger() << "\n";
 
@@ -101,27 +105,38 @@ void UndoSystem::commitSave(){
         }
     }
 
+    this->squaresInSave.clear();
     this->printSystem();
     
 };
 
 void UndoSystem::undo(Grid* grid){
+    std::cout << "called undo \n";
+    std::cout << "Save: " << this->currentSave << "\n";
+
     if(this->backSave == this->currentSave){
         return;
     }
     
     this->currentSave = this->currentSave - 1;
-    if(this->currentSave = -1){
+    if(this->currentSave == -1){
         this->currentSave = this->amountOfSaves - 1;
     }
 
+    std::cout << "called grid add" << "\n"; 
     grid->autoAdd(this->saves[this->currentSave]);
+    this->squaresInSave.clear();
 };
 
 void UndoSystem::addToCurrentSave(GridSquareSave* square){
-    
 
-    saves[this->currentSave].push_back(*square);
+    std::pair<int, int> pairSquare = std::make_pair(square->x, square->y);
+    if(this->squaresInSave.find(pairSquare) != this->squaresInSave.end()){
+        return;
+    }
+    this->squaresInSave.insert(pairSquare);
+
+    
     //adds new
     if(this->sizeSavesArray[this->currentSave] >= saves[this->currentSave].size()){
         saves[this->currentSave].push_back(*square);
@@ -257,6 +272,54 @@ void Grid::drawSquare(int xIndex, int yIndex, Selector* selector, UndoSystem* un
 
     GridSquareSave* newSave = new GridSquareSave {xIndex, yIndex, oldColor};
     undoSystem->addToCurrentSave(newSave);
+}
+
+void Grid::drawSquareColor(int xIndex, int yIndex, Color newColor, UndoSystem* undoSystem){
+    
+    if(xIndex < 0 || this->gridXDim <= xIndex){
+        return;
+    }
+
+    if(yIndex < 0 || this->gridYDim <= yIndex){
+        return;
+    }
+
+    Color oldColor = this->squareGrid[xIndex][yIndex].getColor();
+    this->squareGrid[xIndex][yIndex].setColor(newColor);
+
+    GridSquareSave* newSave = new GridSquareSave {xIndex, yIndex, oldColor};
+    undoSystem->addToCurrentSave(newSave);
+}
+
+Color Grid::getColor(int xIndex, int yIndex){
+    return this->squareGrid[xIndex][yIndex].getColor();
+}
+
+
+void Grid::flood(int xIndex, int yIndex, 
+    Color oldColor, Color newColor, UndoSystem* undoSystem){
+   
+    //makes sure valid tile
+    if(xIndex <= 0 || this->gridXDim <= xIndex){
+        return;
+    }
+
+    if(yIndex <= 0 || this->gridYDim <= yIndex){
+        return;
+    }
+
+    //returns if not the same color
+    Color squareColor = this->squareGrid[xIndex][yIndex].getColor();
+    if(squareColor != oldColor){
+        return;
+    }
+
+    drawSquareColor(xIndex, yIndex, newColor, undoSystem);
+
+    flood(xIndex + 1, yIndex, oldColor, newColor, undoSystem);
+    flood(xIndex - 1, yIndex, oldColor, newColor, undoSystem);
+    flood(xIndex, yIndex + 1, oldColor, newColor, undoSystem);
+    flood(xIndex, yIndex - 1, oldColor, newColor, undoSystem);
 }
 
 
@@ -440,6 +503,8 @@ int main(){
 
     
     int c = 0;
+    bool jClick = false;
+    bool kClick = false;
     while (window.isOpen())
     {
         Event event;
@@ -449,6 +514,35 @@ int main(){
                 window.close();
         }
 
+        
+        if(Keyboard::isKeyPressed(Keyboard::J)){
+            //on click
+            if(jClick == false){
+                jClick = true;
+
+                //test for flood
+                Color oldColor = grid.getColor(20, 20);
+                Color newColor = Color::Magenta;
+                grid.flood(20, 20, oldColor, newColor, &undoSystem);
+                undoSystem.commitSave();
+                std::cout << "Called flood test\n";
+            } 
+        } else {
+            jClick = false;
+
+        }
+
+        if(Keyboard::isKeyPressed(Keyboard::K)){
+            //on click
+            if(kClick == false){
+                kClick = true;
+
+                //test undo
+                undoSystem.undo(&grid);
+            } 
+        } else {
+            kClick = false;
+        }
 
         if (Mouse::isButtonPressed(Mouse::Left)){
 
@@ -491,11 +585,12 @@ int main(){
         window.clear();
         grid.display(&window);
 
-
+        //displays color menu on top
         for(int i = 0; i < colorSelectorsVec.size(); i++){
             colorSelectorsVec[i].display(&window);
         }
 
+        //displays brush size menu on top
         for(int i = 0; i < brushSelectorsVec.size(); i++){
             brushSelectorsVec[i].display(&window);
         }
