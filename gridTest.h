@@ -24,6 +24,10 @@ struct Selector{
     Color selectedColor;
     ColorSelector* currentColorSelector;                //current color selector activated
     BrushSizeSelector* currentBrushSelector;
+    int mode;           // 0: brush
+                        // 1: flood
+                        // 2: select
+                        // 3: pointer
 
     int tilePaintedX;   //stores x of tile your painting, -1 painting nothing
     int tilePaintedY;   //prevents multiple updates if holding down
@@ -65,8 +69,8 @@ class UndoSystem{
     int currentSave;        //marks current save your on in array
     int frontSave;          //marks furthest you can go forward
     int amountOfSaves;      //amount of saves stored
-    int* sizeSavesArray;    //save size of each save array, 
-                            //      saves overwrite previous saves
+    // int* sizeSavesArray;    //save size of each save array, 
+    //                         //      saves overwrite previous saves
 
 
     public:
@@ -81,6 +85,20 @@ class UndoSystem{
         void addToCurrentSave(GridSquareSave* square);
 
         ~UndoSystem();
+};
+
+class TileTracker{
+    int xLocation;
+    int yLocation;
+    int xValue;
+    int yValue;
+    Text textX;
+    Text textY;
+
+    public:
+        TileTracker(int x, int y);
+        void update(RenderWindow* window, Grid* grid);
+        void draw(RenderWindow* window);
 };
 
 
@@ -107,9 +125,19 @@ class Grid{
         void drawSquareColor(int xIndex, int yIndex, Color newColor, UndoSystem* undoSystem);
         Color getColor(int xIndex, int yIndex);
 
+        void drawLine(int xStart, int yStart, int xEnd, int yEnd, 
+            Selector* selector, UndoSystem* UndoSystem);
 
         void flood(int xIndex, int yIndex, Color oldColor, 
             Color newColor, UndoSystem* UndoSystem);
+        
+        void releaseTheFlood(RenderWindow* window, Selector* selector, UndoSystem* undoSystem);
+
+        int getMouseOnXTile(RenderWindow* window);
+        int getMouseOnYTile(RenderWindow* window);
+
+        int getMouseOnXTileNoCheck(RenderWindow* window);
+        int getMouseOnYTileNoCheck(RenderWindow* window);
 
         void display(RenderWindow* window);
 };

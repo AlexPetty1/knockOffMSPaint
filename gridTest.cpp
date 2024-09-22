@@ -7,6 +7,7 @@
 #include <stdio.h> 
 #include <stdlib.h>     
 #include <time.h>
+#include <math.h>
 
 #include "gridTest.h"
 
@@ -41,16 +42,12 @@ GridSquare::GridSquare(int x, int y, int size){
     this->shape.setPosition(Vector2f(float(x), float(y)));
     this->size = size;
 
-
     this->shape.setFillColor(Color::White);
-
 }
 
 GridSquare::GridSquare(){
 
 }
-
-
 
 
 UndoSystem::UndoSystem(int amountOfSaves){
@@ -65,19 +62,16 @@ UndoSystem::UndoSystem(int amountOfSaves){
     tSaves.resize(amountOfSaves);
     this->saves = tSaves;
     this->amountOfSaves = amountOfSaves;
-    this->sizeSavesArray = new int(amountOfSaves);
-    for(int i = 0; i < this->amountOfSaves; i++){
-        this->sizeSavesArray[i] = 0;
-    }
+
 };
 
 void UndoSystem::printSystem(){
 
-    int max = 20;
+    int max = 5;
     for(int i = 0; i < this->saves.size(); i++){
         std::cout << "Save: " << i << " \n";
         for(int j = 0; j < this->saves[i].size(); j++){
-            if(i == max){
+            if(j == max){
                 break;
             }
 
@@ -94,7 +88,7 @@ void UndoSystem::commitSave(){
         currentSave = 0;
     }
 
-    sizeSavesArray[currentSave] = 0;
+
     frontSave = currentSave;
 
     if(frontSave == backSave){
@@ -105,14 +99,12 @@ void UndoSystem::commitSave(){
         }
     }
 
+    this->saves[currentSave].clear();
     this->squaresInSave.clear();
-    this->printSystem();
     
 };
 
 void UndoSystem::undo(Grid* grid){
-    std::cout << "called undo \n";
-    std::cout << "Save: " << this->currentSave << "\n";
 
     if(this->backSave == this->currentSave){
         return;
@@ -123,7 +115,6 @@ void UndoSystem::undo(Grid* grid){
         this->currentSave = this->amountOfSaves - 1;
     }
 
-    std::cout << "called grid add" << "\n"; 
     grid->autoAdd(this->saves[this->currentSave]);
     this->squaresInSave.clear();
 };
@@ -138,21 +129,11 @@ void UndoSystem::addToCurrentSave(GridSquareSave* square){
 
     
     //adds new
-    if(this->sizeSavesArray[this->currentSave] >= saves[this->currentSave].size()){
-        saves[this->currentSave].push_back(*square);
-
-    //overloads if already exists
-    } else {
-        int index = this->sizeSavesArray[this->currentSave];
-        this->saves[this->currentSave][index] = *square; 
-    }
-
-    this->sizeSavesArray[this->currentSave] += 1;
+    saves[this->currentSave].push_back(*square);
+    
 };
 
 UndoSystem::~UndoSystem(){
-
-    delete this->sizeSavesArray;
 }  
 
 
@@ -180,7 +161,6 @@ Grid::Grid(int gridXDim, int gridYDim, int squareSize, int gridOffsetX, int grid
 }
 
 //automatically adds a bunch of squares to the grid
-//used for undo
 void Grid::autoAdd(std::vector<GridSquareSave> squares){
     
     for(int i = 0; i < squares.size(); i++){
@@ -295,10 +275,18 @@ Color Grid::getColor(int xIndex, int yIndex){
     return this->squareGrid[xIndex][yIndex].getColor();
 }
 
+void Grid::releaseTheFlood(RenderWindow* window, Selector* selector, UndoSystem* undoSystem){
+    int xTile = this->getMouseOnXTile(window);
+    int yTile = this->getMouseOnYTile(window);
+    Color newColor = selector->selectedColor;
+    Color oldColor = this->getColor(xTile, yTile);
+    this->flood(xTile, yTile, oldColor, newColor, undoSystem);
+}
+
 
 void Grid::flood(int xIndex, int yIndex, 
     Color oldColor, Color newColor, UndoSystem* undoSystem){
-   
+
     //makes sure valid tile
     if(xIndex <= 0 || this->gridXDim <= xIndex){
         return;
@@ -314,12 +302,98 @@ void Grid::flood(int xIndex, int yIndex,
         return;
     }
 
+    if(squareColor == newColor){
+        return;
+    }
+
+
     drawSquareColor(xIndex, yIndex, newColor, undoSystem);
 
     flood(xIndex + 1, yIndex, oldColor, newColor, undoSystem);
     flood(xIndex - 1, yIndex, oldColor, newColor, undoSystem);
     flood(xIndex, yIndex + 1, oldColor, newColor, undoSystem);
     flood(xIndex, yIndex - 1, oldColor, newColor, undoSystem);
+}
+
+int Grid::getMouseOnXTile(RenderWindow* window){
+    int mouseX = Mouse::getPosition(*window).x;
+    int squareX = (mouseX - this->gridX) / this->squareSize;
+
+
+    if(squareX < 0 || this->gridXDim <= squareX){
+        return -1;
+    }
+
+    return squareX;
+}
+
+int Grid::getMouseOnYTile(RenderWindow* window){
+    int mouseY = Mouse::getPosition(*window).y;
+    int squareY = (mouseY - this->gridY) / this->squareSize;
+
+
+    if(squareY < 0 || this->gridXDim <= squareY){
+        return -1;
+    }
+
+    return squareY;
+}
+
+int Grid::getMouseOnXTileNoCheck(RenderWindow* window){
+    int mouseX = Mouse::getPosition(*window).x;
+    int squareX = (mouseX - this->gridX) / this->squareSize;
+    return squareX;
+}
+
+int Grid::getMouseOnYTileNoCheck(RenderWindow* window){
+    int mouseY = Mouse::getPosition(*window).y;
+    int squareY = (mouseY - this->gridY) / this->squareSize;
+    return squareY;
+}
+
+void Grid::drawLine(int xStart, int yStart, int xEnd, int yEnd, 
+    Selector* selector, UndoSystem* UndoSystem){
+    
+    int thickness = selector->brushWidth;
+    float slope = float(yEnd - yStart) / float(xEnd - xStart);
+    int direction = 1;
+
+    if(abs(slope) <  1){
+        if((xEnd - xStart) < 0){
+            direction = -1;
+        }
+
+        for(int i = 0; i <= abs(xEnd - xStart); i++){
+            int x = i * direction + xStart;
+            int y = round(i * slope * direction + yStart);
+            this->drawSquare(x, y, selector, UndoSystem);
+
+            //makes thickness
+            for(int j = 1; j < thickness; j++){
+                this->drawSquare(x, y + j, selector, UndoSystem);
+                this->drawSquare(x, y - j, selector, UndoSystem);
+            }
+        }
+    } else {
+        if((yEnd - yStart) < 0){
+            direction = -1;
+        }
+
+        float rotatedSlope = (1/slope); 
+
+        for(int i = 0; i <= abs(yEnd - yStart); i++){
+            int y = i * direction + yStart;
+            int x = round(i * rotatedSlope * direction + xStart);
+
+            this->drawSquare(x, y, selector, UndoSystem);
+
+            //makes thickness
+            for(int j = 1; j < thickness; j++){
+                this->drawSquare(x + j, y, selector, UndoSystem);
+                this->drawSquare(x - j, y, selector, UndoSystem);
+            }
+        }
+    }
 }
 
 
@@ -436,6 +510,47 @@ void ColorSelector::display(RenderWindow* window){
     window->draw(this->shape);
 }
 
+TileTracker::TileTracker(int x, int y){
+    this->xLocation = x;
+    this->yLocation = y;
+    this->xValue = -1;
+    this->yValue = -1;
+
+    Text xText;
+    xText.setFont(fonts);
+    xText.setPosition(float(this->xLocation), float(this->yLocation));
+    xText.setCharacterSize(12);
+    xText.setString("X: ");
+    this->textX = xText;
+
+    Text yText;
+    yText.setFont(fonts);
+    yText.setPosition(float(this->xLocation + 30), float(this->yLocation));
+    yText.setCharacterSize(12);
+    yText.setString("Y: ");
+    this->textY = yText;
+}
+
+void TileTracker::update(RenderWindow* window, Grid* grid){
+    this->xValue = grid->getMouseOnXTile(window);
+    this->yValue = grid->getMouseOnYTile(window);
+
+    if(this->xValue == -1 || this->yValue == -1){
+        return;
+    }
+        
+
+    this->textX.setString("X: " + std::to_string(this->xValue));
+    this->textY.setString("Y: " + std::to_string(this->yValue));
+}
+
+void TileTracker::draw(RenderWindow* window){
+    window->draw(this->textX);
+    window->draw(this->textY);
+}
+
+
+
 
 
 int main(){
@@ -450,14 +565,18 @@ int main(){
 
     srand (time(NULL));
 
-    int gridXDim = 40;
-    int gridYDim = 40;
-    int squareSize = 15;
+    int gridXDim = 60;
+    int gridYDim = 60;
+    int squareSize = 10;
     int gridOffsetX = 100;
     int gridOffsetY = 100;
 
+
     Grid grid = Grid(gridXDim, gridYDim, squareSize, gridOffsetX, gridOffsetY);
     // GridSquare testSquare = GridSquare(300, 300, 50);
+
+    TileTracker tileTracker = TileTracker(200, 750);
+
 
     UndoSystem undoSystem = UndoSystem(20);
 
@@ -484,27 +603,21 @@ int main(){
 
     selector.selectedColor = Color::Black;
     selector.currentColorSelector = &colorSelectorsVec[5];
-    selector.brushWidth = 1;
+    selector.brushWidth = 2;
     selector.currentBrushSelector = &brushSelectorsVec[1];
 
     selector.tilePaintedX = -1;
     selector.tilePaintedY = -1;
 
 
-    //test for autobuild
-    std::vector<GridSquareSave> autoBuildTest = {
-        {4, 5, Color::Cyan},
-        {4, 6, Color::Cyan},
-        {4, 7, Color::Cyan}
-    };
 
-    grid.autoAdd(autoBuildTest);
-    undoSystem.printSystem();
+    grid.drawLine(10, 10, 45, 30, &selector, &undoSystem);
 
-    
-    int c = 0;
     bool jClick = false;
     bool kClick = false;
+    int previousX = 0;
+    int previousY = 0;
+
     while (window.isOpen())
     {
         Event event;
@@ -520,12 +633,8 @@ int main(){
             if(jClick == false){
                 jClick = true;
 
-                //test for flood
-                Color oldColor = grid.getColor(20, 20);
-                Color newColor = Color::Magenta;
-                grid.flood(20, 20, oldColor, newColor, &undoSystem);
+                grid.releaseTheFlood(&window, &selector, &undoSystem);
                 undoSystem.commitSave();
-                std::cout << "Called flood test\n";
             } 
         } else {
             jClick = false;
@@ -548,7 +657,10 @@ int main(){
 
             // if held
             grid.selectOnGrid(&window, &selector, &undoSystem);
-            
+
+            int currentX = grid.getMouseOnXTileNoCheck(&window);
+            int currentY = grid.getMouseOnYTileNoCheck(&window);
+
             //on click
             if(selector.held == false){
                 //refactor into on click later
@@ -562,7 +674,13 @@ int main(){
                 }
 
                 selector.held = true;
+            } else {
+
+                grid.drawLine(previousX, previousY, currentX, currentY, &selector, &undoSystem);
             }
+
+            previousX = currentX;
+            previousY = currentY;
 
 
 
@@ -576,11 +694,7 @@ int main(){
                 selector.tilePaintedY = -1;
             }
         }
-
-        c++;
-        if(c == 8){
-            c = 0;
-        }
+        tileTracker.update(&window, &grid);
 
         window.clear();
         grid.display(&window);
@@ -594,6 +708,7 @@ int main(){
         for(int i = 0; i < brushSelectorsVec.size(); i++){
             brushSelectorsVec[i].display(&window);
         }
+        tileTracker.draw(&window);
 
         window.display();
     }
