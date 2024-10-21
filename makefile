@@ -1,20 +1,11 @@
-all: compile link
+EXE=main
+CC = g++
 
-# compile:
-# 	g++ -Isrc/include -c main.cpp
+$(EXE): grid.o
+	g++ -Isrc/include -c brushSizeSelector.cpp colorSelector.cpp grid.cpp gridSquare.cpp main.cpp tileTracker.cpp undoSystem.cpp 
+	g++ brushSizeSelector.o colorSelector.o grid.o gridSquare.o main.o tileTracker.o undoSystem.o -o main -Lsrc/lib -lsfml-graphics -lsfml-window -lsfml-system
 
-# link:
-# 	g++ main.o -o main -Lsrc\lib -lsfml-graphics -lsfml-window -lsfml-system
-
-
-# placeTest:
-# 	g++ -Isrc/include -c placeTest.cpp
-# 	g++ placeTest.o -o placeTest -Lsrc/lib -lsfml-graphics -lsfml-window -lsfml-system
-
-
-gridTest:
-	g++ -Isrc/include -c gridTest.cpp
-	g++ gridTest.o -o gridTest -Lsrc/lib -lsfml-graphics -lsfml-window -lsfml-system
-
+grid.o: grid.cpp
+	$(CC) -Isrc/include -c grid.cpp
 
 
