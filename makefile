@@ -1,11 +1,15 @@
-EXE=main
+
+CXX_FILES = $(wildcard src/*.cpp)   # All .cpp files in the directory
+OBJ_FILES = $(CXX_FILES:src/%.cpp=$(OBJ_DIR)/%.o)   # Corresponding .o files
+OBJ_DIR = obj
+SRC_DIR = src
+INC = -Isrc/include
 CC = g++
+LIBS = -Lsrc/lib -lsfml-graphics -lsfml-window -lsfml-system
 
-$(EXE): grid.o
-	g++ -Isrc/include -c brushSizeSelector.cpp colorSelector.cpp grid.cpp gridSquare.cpp main.cpp tileTracker.cpp undoSystem.cpp 
-	g++ brushSizeSelector.o colorSelector.o grid.o gridSquare.o main.o tileTracker.o undoSystem.o -o main -Lsrc/lib -lsfml-graphics -lsfml-window -lsfml-system
+# Rules
+all: $(OBJ_FILES)
+	g++ $(OBJ_FILES) -o main $(LIBS)
 
-grid.o: grid.cpp
-	$(CC) -Isrc/include -c grid.cpp
-
-
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+	$(CC) $(INC) -c $< -o $@
