@@ -13,14 +13,11 @@ TileTracker::TileTracker(int x, int y){
     this->fonts = Font();
     this->fonts.loadFromFile("fonts/OpenSans-Bold.ttf");
 
-    Text xText;
-    xText.setFont(this->fonts);
+    Text xText = Text("X: ", this->fonts, 12);
     xText.setPosition(float(this->xLocation), float(this->yLocation));
-    xText.setCharacterSize(12);
-    xText.setString("X: ");
     this->textX = xText;
 
-    Text yText;
+    Text yText = Text();
     yText.setFont(this->fonts);
     yText.setPosition(float(this->xLocation + 30), float(this->yLocation));
     yText.setCharacterSize(12);

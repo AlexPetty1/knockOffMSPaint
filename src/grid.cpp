@@ -5,8 +5,6 @@
 #include <math.h>
 
 #include "grid.h"
-#include "ColorSelector.h"
-#include "BrushSizeSelector.h"
 #include "GridSquare.h"
 #include "undoSystem.h"
 
@@ -33,7 +31,11 @@ Grid::Grid(int gridXDim, int gridYDim, int squareSize, int gridOffsetX, int grid
     this->gridY = gridOffsetY;
 }
 
-//automatically adds a bunch of squares to the grid
+// Name: autoAdd
+// Description: automatically colors squares on the grid from an array
+//          will error check to make sure squares are on grid
+// Arguments: squares - vector of grid squares
+// Sideffects: changes gridsquares
 void Grid::autoAdd(std::vector<GridSquareSave> squares){
     
     for(int i = 0; i < squares.size(); i++){
@@ -54,7 +56,7 @@ void Grid::autoAdd(std::vector<GridSquareSave> squares){
     }
 }
 
-
+// runs when clicking on the grid
 void Grid::selectOnGrid(RenderWindow* window, Selector* selector, UndoSystem* undoSystem){
     int mouseX = Mouse::getPosition(*window).x;
     int mouseY = Mouse::getPosition(*window).y;
@@ -62,6 +64,7 @@ void Grid::selectOnGrid(RenderWindow* window, Selector* selector, UndoSystem* un
     int squareX = (mouseX - this->gridX) / this->squareSize;
     int squareY = (mouseY - this->gridY) / this->squareSize;
     
+    //makes sure tile is in bounds
     if(squareX < 0 || this->gridXDim <= squareX){
         return;
     }
@@ -85,6 +88,7 @@ void Grid::selectOnGrid(RenderWindow* window, Selector* selector, UndoSystem* un
     //                      o o o o o
     //                        o o o
     //                          o
+    //
     //makes center
     drawSquare(squareX, squareY, selector, undoSystem);
     //makes wings
@@ -267,7 +271,6 @@ void Grid::drawLine(int xStart, int yStart, int xEnd, int yEnd,
         }
     }
 }
-
 
 void Grid::display(RenderWindow* window){
     for(int i = 0; i < this->gridYDim; i++){

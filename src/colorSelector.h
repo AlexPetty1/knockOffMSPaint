@@ -11,16 +11,16 @@ using namespace sf;
 struct Selector;
 
 class ColorSelector{
-    int x;
-    int y;
-    int size;
-    int borderSize;
-    Color color;
-    RectangleShape shape;
 
     private:
         const Color unSelectColor = Color(150, 150, 150, 255);
         const Color selectColor = Color(40, 40, 40, 255);
+        int x;
+        int y;
+        int size;
+        int borderSize;
+        Color color;
+        RectangleShape shape;
     
     public:
         ColorSelector(int x, int y, int size, int borderSize, Color color);

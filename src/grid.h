@@ -32,13 +32,15 @@ struct Selector{
 
 
 class Grid{
-    int gridXDim;
-    int gridYDim;
-    int squareSize;
-    int gridX;
-    int gridY;
-    std::vector<std::vector<GridSquare>> squareGrid;
 
+
+    private:
+        int gridXDim;
+        int gridYDim;
+        int squareSize;
+        int gridX;
+        int gridY;
+        std::vector<std::vector<GridSquare>> squareGrid;
 
     public:
         Grid(int gridXDim, int gridYDim, int squareSize, int gridOffsetX, int gridOffsetY);

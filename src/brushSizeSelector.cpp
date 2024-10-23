@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include <iostream>
 
 #include "grid.h"
 #include "brushSizeSelector.h"
@@ -6,6 +7,9 @@
 using namespace sf;
 
 BrushSizeSelector::BrushSizeSelector(int x, int y, int size, int borderSize, int brushSize){
+    this->fonts = Font();
+    this->fonts.loadFromFile("fonts/OpenSans-Bold.ttf");
+
     this->x = x;
     this->y = y;
     this->shapeSize = size;
@@ -15,18 +19,12 @@ BrushSizeSelector::BrushSizeSelector(int x, int y, int size, int borderSize, int
     this->shape = RectangleShape(Vector2f(float(size), float(size)));
     this->shape.setPosition(float(x), float(y));
     this->shape.setFillColor(unSelectColor);
-    this->shape.setOutlineColor(Color::Black);
+    this->shape.setOutlineColor(Color::White);
     this->shape.setOutlineThickness(float(borderSize));
 
-    this->fonts = Font();
-    this->fonts.loadFromFile("fonts/OpenSans-Bold.ttf");
-
-    Text tText = Text();
-    tText.setFont(this->fonts);
-    tText.setPosition(float(x + 5), float(y + 5));
-    tText.setCharacterSize(24);
-    tText.setString(std::to_string(this->brushSize));
-    this->text = tText;
+    this->brushText = Text(std::to_string(this->brushSize), this->fonts, 15);
+    this->brushText.setPosition(float(this->x + 5), float(this->y + 5));
+    this->brushText.setFillColor(selectColor);
 };
 
 
@@ -51,15 +49,17 @@ void BrushSizeSelector::select(Selector* selector){
     selector->currentBrushSelector = this;
 
     this->shape.setFillColor(selectColor);
-    this->text.setFillColor(unSelectColor);
+    this->brushText.setFillColor(unSelectColor);
 }
 
 void BrushSizeSelector::unselect(){
     this->shape.setFillColor(unSelectColor);
-    this->text.setFillColor(selectColor);
+    this->brushText.setFillColor(selectColor);
 }
 
 void BrushSizeSelector::display(RenderWindow* window){
+    this->brushText.setFont(this->fonts);   //the text will not load if only loading font in constructor
+                                            //  so it loads here as well
     window->draw(this->shape);
-    window->draw(this->text);
+    window->draw(this->brushText);
 }

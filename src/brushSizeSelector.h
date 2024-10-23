@@ -11,17 +11,18 @@ using namespace sf;
 struct Selector;
 
 class BrushSizeSelector{
-    int x;
-    int y;
-    int shapeSize;
-    int borderSize;
-    int brushSize;
-    Text text;
-    RectangleShape shape;
-
+    
     private:
-        const Color unSelectColor = Color(150, 150, 150, 255);
-        const Color selectColor = Color(40, 40, 40, 255);
+        const Color unSelectColor = Color(180, 180, 180, 255);
+        const Color selectColor = Color(30, 30, 30, 255);
+        int x;
+        int y;
+        int shapeSize;
+        int borderSize;
+        int brushSize;
+        RectangleShape shape;
+        RectangleShape innerShape;
+        Text brushText;
         Font fonts;
     
     public:
