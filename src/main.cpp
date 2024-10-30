@@ -113,7 +113,7 @@ int main(){
 
         if (Mouse::isButtonPressed(Mouse::Left)){
 
-            // if held
+            // on hold
             grid.selectOnGrid(&window, &selector, &undoSystem);
 
             int currentX = grid.getMouseOnXTileNoCheck(&window);
@@ -128,12 +128,12 @@ int main(){
                 }
 
                 for(int i = 0; i < brushSelectorsVec.size(); i++){
+                    std::cout << "Test selector: " << i << "\n";
                     brushSelectorsVec[i].isClicked(&window, &selector);
                 }
 
                 selector.held = true;
             } else {
-
                 grid.drawLine(previousX, previousY, currentX, currentY, &selector, &undoSystem);
             }
 
@@ -145,6 +145,7 @@ int main(){
         } else {
             selector.held = false;
 
+            //off
             if(selector.brushing == true){
                 undoSystem.commitSave();
                 selector.brushing = false;
