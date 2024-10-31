@@ -1,1 +1,4 @@
-obj/*.o
+obj_win/*.o
+obj_lin/*.o
+main
+main.exe

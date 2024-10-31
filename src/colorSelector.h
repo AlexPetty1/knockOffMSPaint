@@ -27,6 +27,7 @@ class ColorSelector{
 
         void isClicked(RenderWindow* window, Selector* selector);
 
+        void select(Selector* selector);
         void unSelect();
 
         void display(RenderWindow* window);

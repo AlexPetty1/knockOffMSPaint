@@ -64,7 +64,7 @@ int main(){
     selector.brushing = false;
 
     selector.selectedColor = Color::Black;
-    selector.currentColorSelector = &colorSelectorsVec[5];
+    selector.currentColorSelector = &colorSelectorsVec[4];
     selector.brushWidth = 2;
     selector.currentBrushSelector = &brushSelectorsVec[1];
 
@@ -128,7 +128,6 @@ int main(){
                 }
 
                 for(int i = 0; i < brushSelectorsVec.size(); i++){
-                    std::cout << "Test selector: " << i << "\n";
                     brushSelectorsVec[i].isClicked(&window, &selector);
                 }
 
@@ -171,6 +170,8 @@ int main(){
 
         window.display();
     }
+
+
 
     return 0;
 }

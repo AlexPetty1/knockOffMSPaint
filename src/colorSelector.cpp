@@ -2,7 +2,6 @@
 
 #include "colorSelector.h"
 #include "grid.h"
-#include <iostream>
 
 using namespace sf;
 
@@ -19,14 +18,13 @@ ColorSelector::ColorSelector(int x, int y, int size, int borderSize, Color color
     this->shape.setFillColor(color);
     this->shape.setOutlineColor(unSelectColor);
     this->shape.setOutlineThickness(float(borderSize));
+    unSelect();
 };
 
 
 void ColorSelector::isClicked(RenderWindow* window, Selector* selector){
     int mouseX = Mouse::getPosition(*window).x;
     int mouseY = Mouse::getPosition(*window).y;
-
-    std::cout << "Is clicked called\n";
 
     if(mouseX < this->x || this->x + size < mouseX){
         return;
@@ -36,21 +34,22 @@ void ColorSelector::isClicked(RenderWindow* window, Selector* selector){
         return;
     }
 
-    std::cout << "Is clicked got past edge guards\n";
+    select(selector);
 
+}
+
+void ColorSelector::select(Selector* selector){
     if(selector->currentColorSelector != NULL){
         selector->currentColorSelector->unSelect();
     }
+    selector->selectedColor = this->color;
     selector->currentColorSelector = this;
 
-    std::cout << "Selected a color\n";
-    selector->selectedColor = this->color;
     this->shape.setOutlineColor(selectColor);
 }
 
 void ColorSelector::unSelect(){
-    std::cout << "called unselect\n";
-    //this->shape.setOutlineColor(Color(150, 150, 150, 255));
+    this->shape.setOutlineColor(unSelectColor);
 }
 
 void ColorSelector::display(RenderWindow* window){
