@@ -22,11 +22,11 @@ $(OBJ_DIR_LIN)/%.o: $(SRC_DIR)/%.cpp
 	$(CC) $(FLAGS_LIN) -c $< -o $@
 
 # windows
-windows: $(OBJ_FILES_WIN)
-	g++ $(OBJ_FILES_WIN) -o main $(LIBS_WIN)
+# windows: $(OBJ_FILES_WIN)
+# 	g++ $(OBJ_FILES_WIN) -o main $(LIBS_WIN)
 
-$(OBJ_DIR_WIN)/%.o: $(SRC_DIR)/%.cpp
-	$(CC) $(INC_WIN) -c $< -o $@
+# $(OBJ_DIR_WIN)/%.o: $(SRC_DIR)/%.cpp
+# 	$(CC) $(INC_WIN) -c $< -o $@
 
 
 clean: 

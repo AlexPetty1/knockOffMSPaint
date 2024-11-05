@@ -13,6 +13,8 @@
 #include "tileTracker.h"
 #include "colorSelector.h"
 #include "brushSizeSelector.h"
+#include "button.h"
+#include "buttonGroup.h"
 
 using namespace sf;
 
@@ -58,6 +60,23 @@ int main(){
         BrushSizeSelector(20, 260, 30, 5, 5),   //size 5
         BrushSizeSelector(20, 300, 30, 5, 10)   //size 10
     };
+
+    Button testButton = Button(300, 10, 60, 40, "Button test", 5);
+
+    int buttonTestWidth = 30;
+    int buttonTestHeight = 20;
+    std::vector<Button> buttonList = {
+        Button(0, 0, buttonTestWidth, buttonTestHeight, "Test", 1),   
+        Button(0, 0, buttonTestWidth, buttonTestHeight, "Test", 2),
+        Button(0, 0, buttonTestWidth, buttonTestHeight, "Test", 3),
+        Button(0, 0, buttonTestWidth, buttonTestHeight, "Test", 4),
+        Button(0, 0, buttonTestWidth, buttonTestHeight, "Test", 5),
+        Button(0, 0, buttonTestWidth, buttonTestHeight, "Test", 6),
+        Button(0, 0, buttonTestWidth, buttonTestHeight, "Test", 7)
+    };
+    ButtonGroup buttonGroupTest = ButtonGroup(buttonList, 500, 10, 5, 3, 2);
+ 
+    
 
     struct Selector selector;
     selector.held = false;
@@ -121,7 +140,8 @@ int main(){
 
             //on click
             if(selector.held == false){
-                //refactor into on click later
+
+                int testValue = testButton.isClicked(&window);
 
                 for(int i = 0; i < colorSelectorsVec.size(); i++){
                     colorSelectorsVec[i].isClicked(&window, &selector);
@@ -130,6 +150,8 @@ int main(){
                 for(int i = 0; i < brushSelectorsVec.size(); i++){
                     brushSelectorsVec[i].isClicked(&window, &selector);
                 }
+
+                buttonGroupTest.isClicked(&window);
 
                 selector.held = true;
             } else {
@@ -154,6 +176,8 @@ int main(){
         }
         tileTracker.update(&window, &grid);
 
+
+
         window.clear();
         grid.display(&window);
 
@@ -166,8 +190,10 @@ int main(){
         for(int i = 0; i < brushSelectorsVec.size(); i++){
             brushSelectorsVec[i].display(&window);
         }
-        tileTracker.draw(&window);
 
+        testButton.display(&window);
+        tileTracker.draw(&window);
+        buttonGroupTest.display(&window);
         window.display();
     }
 
