@@ -158,7 +158,24 @@ void Grid::brushOnGrid(RenderWindow* window, GridSelector* selector, UndoSystem*
     selector->tilePaintedX = squareX;
     selector->tilePaintedY = squareY;
     
-   drawDiamond(squareX, squareY, selector->brushWidth, selector, undoSystem);
+   //drawDiamond(squareX, squareY, selector->brushWidth, selector, undoSystem);
+   drawCircle(squareX, squareY, selector->brushWidth, selector, undoSystem);
+
+}
+
+//almost draws a circle
+void Grid::drawCircle(int centerX, int centerY, int radius, GridSelector* selector, UndoSystem* undoSystem){
+    for(int i = 0; i < radius; i++){
+        int yLength = round(sqrt(radius * radius - i * i));
+
+        for(int j = 0; j < yLength; j++){
+            drawSquare(centerX + j, centerY + i, selector, undoSystem);
+            drawSquare(centerX + j, centerY - i, selector, undoSystem);
+
+            drawSquare(centerX - j, centerY + i, selector, undoSystem);
+            drawSquare(centerX - j, centerY - i, selector, undoSystem);
+        }
+    }
 }
 
 // draws a diamond on the grid

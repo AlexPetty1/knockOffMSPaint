@@ -80,7 +80,8 @@ int main(){
         Toggle(0, 0, 25, 25, "4", 4),
         Toggle(0, 0, 25, 25, "5", 5),
         Toggle(0, 0, 25, 25, "10", 10),
-        Toggle(0, 0, 25, 25, "15", 15)
+        Toggle(0, 0, 25, 25, "15", 15),
+        Toggle(0, 0, 25, 25, "25", 25)
     };
     ToggleGroup brushSelectorsGroup = ToggleGroup(brushSelectorsList, 10, 100, -1, 2, 5);
     brushSelectorsGroup.selectSpecific(1);

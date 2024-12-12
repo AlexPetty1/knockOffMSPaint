@@ -35,6 +35,7 @@ class Grid{
         void brushOnGrid(RenderWindow* window, GridSelector* selector, UndoSystem* undoSystem);
         
         void drawDiamond(int xIndex, int yIndex, int radius, GridSelector* selector, UndoSystem* undoSystem);
+        void drawCircle(int centerX, int centerY, int radius, GridSelector* selector, UndoSystem* undoSystem);
 
         void drawSquare(int xIndex, int yIndex, GridSelector* selector, UndoSystem* undoSystem);
         void drawSquareColor(int xIndex, int yIndex, Color newColor, UndoSystem* undoSystem);
