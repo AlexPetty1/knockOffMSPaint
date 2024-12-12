@@ -3,6 +3,7 @@
 
 #include "toggleGroup.h"
 #include "toggle.h"
+#include <iostream>
 
 using namespace sf;
 
@@ -83,13 +84,13 @@ int ToggleGroup::isClicked(RenderWindow* window){
 }
 
 int ToggleGroup::selectSpecific(int index){
-
-    if(index > 0 || index >= this->numberOfToggles){
+    if(0 > index || index >= this->numberOfToggles){
         return -1;
     }
 
     this->togglesList[index].select();
     this->value = togglesList[index].getValue();
+    this->toggleSelected = index;
     return this->value;
 }
 

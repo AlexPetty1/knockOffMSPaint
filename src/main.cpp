@@ -52,8 +52,8 @@ int main(){
     std::vector<Toggle> colorSelectorsList = {
         Toggle(0, 0, 25, 25, "", Red.toInteger()),
         Toggle(0, 0, 25, 25, "", Green.toInteger()),
+        Toggle(0, 0, 25, 25, "", White.toInteger() - 1),    //-1 as white is -1 as a signed integer
         Toggle(0, 0, 25, 25, "", Blue.toInteger()),
-        Toggle(0, 0, 25, 25, "", White.toInteger()),
         Toggle(0, 0, 25, 25, "", Black.toInteger()),
         Toggle(0, 0, 25, 25, "", Magenta.toInteger())
     };
@@ -61,10 +61,10 @@ int main(){
     colorSelectorsList[0].setUnSelectColor(Red);
     colorSelectorsList[1].setSelectColor(GreenSelect);
     colorSelectorsList[1].setUnSelectColor(Green);
-    colorSelectorsList[2].setSelectColor(BlueSelect);
-    colorSelectorsList[2].setUnSelectColor(Blue);
-    colorSelectorsList[3].setSelectColor(WhiteSelect);
-    colorSelectorsList[3].setUnSelectColor(White);
+    colorSelectorsList[2].setSelectColor(WhiteSelect);
+    colorSelectorsList[2].setUnSelectColor(White);
+    colorSelectorsList[3].setSelectColor(BlueSelect);
+    colorSelectorsList[3].setUnSelectColor(Blue);
     colorSelectorsList[4].setSelectColor(BlackSelect);
     colorSelectorsList[4].setUnSelectColor(Black);
     colorSelectorsList[5].setSelectColor(MagentaSelect);
