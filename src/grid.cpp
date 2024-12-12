@@ -123,7 +123,8 @@ void Grid::selectDrawLine(RenderWindow* window, GridSelector* selector, UndoSyst
 
     drawLine(selector->lineCord1[0], selector->lineCord1[1], 
         xTile, yTile, selector, undoSystem);
-    
+    drawDiamond(selector->lineCord1[0], selector->lineCord1[1], selector->brushWidth, selector, undoSystem);
+    drawDiamond(xTile, yTile, selector->brushWidth, selector, undoSystem);
     selector->lineCord1[0] = xTile;
     selector->lineCord1[1] = yTile;
 
@@ -161,11 +162,11 @@ void Grid::brushOnGrid(RenderWindow* window, GridSelector* selector, UndoSystem*
 }
 
 // draws a diamond on the grid
-//                          o
-// creates                o o o
-//                      o o o o o
-//                        o o o
-//                          o
+// creates              o
+//                    o o o
+//                  o o o o o
+//                    o o o
+//                      o
 //
 void Grid::drawDiamond(int xIndex, int yIndex, int radius, GridSelector* selector, UndoSystem* undoSystem){
     if(radius < 1){
