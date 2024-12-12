@@ -11,25 +11,18 @@
 
 #include "grid.h"
 #include "tileTracker.h"
-#include "colorSelector.h"
-#include "brushSizeSelector.h"
-#include "button.h"
-#include "buttonGroup.h"
+#include "toggle.h"
+#include "toggleGroup.h"
+#include "gridSelector.h"
 
 using namespace sf;
 
 int main(){
+
     RenderWindow window(sf::VideoMode(800, 800), "SFML works!");
     window.setFramerateLimit(480);
     
     srand (time(NULL));
-
-    //creates directory if it exists
-    // const char* savePath = "./saves";
-    // struct stat sb;
-    // if (stat(savePath, &sb) != 0){
-    //     _mkdir(savePath);
-    // }
 
     int gridXDim = 60;
     int gridYDim = 60;
@@ -41,57 +34,82 @@ int main(){
 
     TileTracker tileTracker = TileTracker(200, 750);
 
-
     UndoSystem undoSystem = UndoSystem(20);
 
-    std::vector<ColorSelector> colorSelectorsVec = {
-        ColorSelector(50, 10, 40, 5, Color::Red),
-        ColorSelector(100, 10, 40, 5, Color::Green),
-        ColorSelector(150, 10, 40, 5, Color::Blue),
-        ColorSelector(200, 10, 40, 5, Color::White),
-        ColorSelector(250, 10, 40, 5, Color::Black)
+
+    Color Red = Color(255, 0, 0, 255);
+    Color RedSelect = Color(200, 0, 0, 255);
+    Color Green = Color(0, 255, 0, 255);
+    Color GreenSelect = Color(0, 200, 0, 255);
+    Color Blue = Color(0, 0, 255, 255);
+    Color BlueSelect = Color(0, 0, 200, 255);
+    Color White = Color(255, 255, 255, 255);
+    Color WhiteSelect = Color(220, 220, 220, 255);
+    Color Black = Color(0, 0, 0, 255);
+    Color BlackSelect = Color(10, 10, 10, 255);
+    Color Magenta = Color(255, 0, 255, 255);
+    Color MagentaSelect = Color(200, 0, 200, 255);
+    std::vector<Toggle> colorSelectorsList = {
+        Toggle(0, 0, 25, 25, "", Red.toInteger()),
+        Toggle(0, 0, 25, 25, "", Green.toInteger()),
+        Toggle(0, 0, 25, 25, "", Blue.toInteger()),
+        Toggle(0, 0, 25, 25, "", White.toInteger()),
+        Toggle(0, 0, 25, 25, "", Black.toInteger()),
+        Toggle(0, 0, 25, 25, "", Magenta.toInteger())
     };
+    colorSelectorsList[0].setSelectColor(RedSelect);
+    colorSelectorsList[0].setUnSelectColor(Red);
+    colorSelectorsList[1].setSelectColor(GreenSelect);
+    colorSelectorsList[1].setUnSelectColor(Green);
+    colorSelectorsList[2].setSelectColor(BlueSelect);
+    colorSelectorsList[2].setUnSelectColor(Blue);
+    colorSelectorsList[3].setSelectColor(WhiteSelect);
+    colorSelectorsList[3].setUnSelectColor(White);
+    colorSelectorsList[4].setSelectColor(BlackSelect);
+    colorSelectorsList[4].setUnSelectColor(Black);
+    colorSelectorsList[5].setSelectColor(MagentaSelect);
+    colorSelectorsList[5].setUnSelectColor(Magenta);
 
-    std::vector<BrushSizeSelector> brushSelectorsVec = {
-        BrushSizeSelector(20, 100, 30, 5, 1),   //size 1
-        BrushSizeSelector(20, 140, 30, 5, 2),   //size 2
-        BrushSizeSelector(20, 180, 30, 5, 3),   //size 3
-        BrushSizeSelector(20, 220, 30, 5, 4),   //size 4
-        BrushSizeSelector(20, 260, 30, 5, 5),   //size 5
-        BrushSizeSelector(20, 300, 30, 5, 10)   //size 10
+    ToggleGroup colorSelectorsGroup = ToggleGroup(colorSelectorsList, 50, 10, 10, 5, 10);
+    colorSelectorsGroup.selectSpecific(4);
+
+    std::vector<Toggle> brushSelectorsList = {
+        Toggle(0, 0, 25, 25, "1", 1),
+        Toggle(0, 0, 25, 25, "2", 2),
+        Toggle(0, 0, 25, 25, "3", 3),
+        Toggle(0, 0, 25, 25, "4", 4),
+        Toggle(0, 0, 25, 25, "5", 5),
+        Toggle(0, 0, 25, 25, "10", 10),
+        Toggle(0, 0, 25, 25, "15", 15)
     };
+    ToggleGroup brushSelectorsGroup = ToggleGroup(brushSelectorsList, 10, 100, -1, 2, 5);
+    brushSelectorsGroup.selectSpecific(1);
 
-    Button testButton = Button(300, 10, 60, 40, "Button test", 5);
-
-    int buttonTestWidth = 30;
-    int buttonTestHeight = 20;
-    std::vector<Button> buttonList = {
-        Button(0, 0, buttonTestWidth, buttonTestHeight, "Test", 1),   
-        Button(0, 0, buttonTestWidth, buttonTestHeight, "Test", 2),
-        Button(0, 0, buttonTestWidth, buttonTestHeight, "Test", 3),
-        Button(0, 0, buttonTestWidth, buttonTestHeight, "Test", 4),
-        Button(0, 0, buttonTestWidth, buttonTestHeight, "Test", 5),
-        Button(0, 0, buttonTestWidth, buttonTestHeight, "Test", 6),
-        Button(0, 0, buttonTestWidth, buttonTestHeight, "Test", 7)
+    std::vector<Toggle> modeSelectorList = {
+        Toggle(0, 0, 50, 25, "Brush", 0),
+        Toggle(0, 0, 50, 25, "Fill", 1),
+        Toggle(0, 0, 50, 25, "Select", 2),
+        Toggle(0, 0, 50, 25, "Line", 3)
     };
-    ButtonGroup buttonGroupTest = ButtonGroup(buttonList, 500, 10, 5, 3, 2);
- 
-    
+    ToggleGroup modeSelectorGroup = ToggleGroup(modeSelectorList, 350, 10, 1, -1, 5);
+    modeSelectorGroup.selectSpecific(0);
 
-    struct Selector selector;
+    Toggle undoToggle = Toggle(300, 10, 50, 25, "Undo", 1);    
+
+    struct GridSelector selector;
     selector.held = false;
-    selector.brushing = false;
+    selector.effectingGrid = false;
 
     selector.selectedColor = Color::Black;
-    selector.currentColorSelector = &colorSelectorsVec[4];
     selector.brushWidth = 2;
-    selector.currentBrushSelector = &brushSelectorsVec[1];
 
     selector.tilePaintedX = -1;
     selector.tilePaintedY = -1;
 
-    bool jClick = false;
-    bool kClick = false;
+    selector.lineCord1[0] = -1;
+    selector.lineCord1[1] = -1;
+
+    bool isMousePressed = false;
     int previousX = 0;
     int previousY = 0;
 
@@ -104,54 +122,41 @@ int main(){
                 window.close();
         }
 
-        
-        if(Keyboard::isKeyPressed(Keyboard::J)){
-            //on click
-            if(jClick == false){
-                jClick = true;
+        isMousePressed = Mouse::isButtonPressed(Mouse::Left);
 
-                grid.releaseTheFlood(&window, &selector, &undoSystem);
-                undoSystem.commitSave();
-            } 
-        } else {
-            jClick = false;
+        if (isMousePressed == true){
 
-        }
-
-        if(Keyboard::isKeyPressed(Keyboard::K)){
-            //on click
-            if(kClick == false){
-                kClick = true;
-
-                //test undo
-                undoSystem.undo(&grid);
-            } 
-        } else {
-            kClick = false;
-        }
-
-        if (Mouse::isButtonPressed(Mouse::Left)){
-
-            // on hold
             grid.selectOnGrid(&window, &selector, &undoSystem);
-
             int currentX = grid.getMouseOnXTileNoCheck(&window);
             int currentY = grid.getMouseOnYTileNoCheck(&window);
 
             //on click
             if(selector.held == false){
-
-                int testValue = testButton.isClicked(&window);
-
-                for(int i = 0; i < colorSelectorsVec.size(); i++){
-                    colorSelectorsVec[i].isClicked(&window, &selector);
+                
+                int newBrushWidth = brushSelectorsGroup.isClicked(&window);
+                if(newBrushWidth != -1){
+                    selector.brushWidth = newBrushWidth;
                 }
 
-                for(int i = 0; i < brushSelectorsVec.size(); i++){
-                    brushSelectorsVec[i].isClicked(&window, &selector);
+                int newColor = colorSelectorsGroup.isClicked(&window);
+                if(newColor != -1){
+                    selector.selectedColor = Color(newColor);
                 }
 
-                buttonGroupTest.isClicked(&window);
+                int undoValue = undoToggle.isClicked(&window);
+                if(undoValue != -1){
+                    undoSystem.undo(&grid);
+                }
+
+                int newModeValue = modeSelectorGroup.isClicked(&window);
+                if(newModeValue != -1){
+                    selector.mode = newModeValue;
+
+                    if(selector.mode == 3){
+                        selector.lineCord1[0] = -1;
+                        selector.lineCord1[1] = -1;
+                    }
+                }
 
                 selector.held = true;
             } else {
@@ -160,40 +165,32 @@ int main(){
 
             previousX = currentX;
             previousY = currentY;
-
-
-
-        } else {
+        }
+        
+        if(isMousePressed == false){
             selector.held = false;
 
-            //off
-            if(selector.brushing == true){
+            if(selector.effectingGrid == true){
                 undoSystem.commitSave();
-                selector.brushing = false;
+                selector.effectingGrid = false;
                 selector.tilePaintedX = -1;
                 selector.tilePaintedY = -1;
             }
         }
+
+
         tileTracker.update(&window, &grid);
-
-
-
         window.clear();
         grid.display(&window);
 
         //displays color menu on top
-        for(int i = 0; i < colorSelectorsVec.size(); i++){
-            colorSelectorsVec[i].display(&window);
-        }
-
-        //displays brush size menu on top
-        for(int i = 0; i < brushSelectorsVec.size(); i++){
-            brushSelectorsVec[i].display(&window);
-        }
-
-        testButton.display(&window);
         tileTracker.draw(&window);
-        buttonGroupTest.display(&window);
+        brushSelectorsGroup.display(&window);
+        colorSelectorsGroup.display(&window);
+        modeSelectorGroup.display(&window);
+        undoToggle.display(&window);
+
+
         window.display();
     }
 

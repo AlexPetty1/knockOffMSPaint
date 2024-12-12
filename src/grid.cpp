@@ -3,10 +3,11 @@
 #include <SFML/Window.hpp>
 #include <SFML/System.hpp>
 #include <math.h>
+#include <iostream>
 
 #include "grid.h"
-#include "GridSquare.h"
 #include "undoSystem.h"
+#include "gridSelector.h"
 
 using namespace sf;
 
@@ -33,7 +34,7 @@ Grid::Grid(int gridXDim, int gridYDim, int squareSize, int gridOffsetX, int grid
 
 // Name: autoAdd
 // Description: automatically colors squares on the grid from an array
-//          will error check to make sure squares are on grid
+//          error checks to make sure squares are on grid
 // Arguments: squares - vector of grid squares
 // Sideffects: changes gridsquares
 void Grid::autoAdd(std::vector<GridSquareSave> squares){
@@ -56,8 +57,14 @@ void Grid::autoAdd(std::vector<GridSquareSave> squares){
     }
 }
 
-// runs when clicking on the grid
-void Grid::selectOnGrid(RenderWindow* window, Selector* selector, UndoSystem* undoSystem){
+// Name: selectOnGrid
+// Description: runs when you click on a grid
+//      error checks to make sure cursor is on grid
+// Arguments: window - window the grid is on
+//             selector - selector 
+//             undoSystem - 
+// Sideffects: 
+void Grid::selectOnGrid(RenderWindow* window, GridSelector* selector, UndoSystem* undoSystem){
     int mouseX = Mouse::getPosition(*window).x;
     int mouseY = Mouse::getPosition(*window).y;
     
@@ -78,42 +85,117 @@ void Grid::selectOnGrid(RenderWindow* window, Selector* selector, UndoSystem* un
         return;
     }
 
+    switch(selector->mode){
+        case 0:
+            brushOnGrid(window, selector, undoSystem);
+            break;
+        case 1: 
+            releaseTheFlood(window, selector, undoSystem);
+            break;
+        case 3:
+            selectDrawLine(window, selector, undoSystem);
+            break;
+    }
+}
+
+
+void Grid::selectDrawLine(RenderWindow* window, GridSelector* selector, UndoSystem* undoSystem){
+    int xTile = this->getMouseOnXTile(window);
+    int yTile = this->getMouseOnYTile(window);
+
+    //makes sure valid tile
+    if(xTile <= 0 || this->gridXDim <= xTile){
+        return;
+    }
+
+    if(yTile <= 0 || this->gridYDim <= yTile){
+        return;
+    }
+
+    selector->effectingGrid = true;
+
+    if(selector->lineCord1[0] == -1 || selector->lineCord1[1] == -1){
+        selector->lineCord1[0] = xTile;
+        selector->lineCord1[1] = yTile;
+        return;
+    }
+
+
+    drawLine(selector->lineCord1[0], selector->lineCord1[1], 
+        xTile, yTile, selector, undoSystem);
+    
+    selector->lineCord1[0] = xTile;
+    selector->lineCord1[1] = yTile;
+
+}
+
+
+// runs when clicking on the grid
+void Grid::brushOnGrid(RenderWindow* window, GridSelector* selector, UndoSystem* undoSystem){
+    int mouseX = Mouse::getPosition(*window).x;
+    int mouseY = Mouse::getPosition(*window).y;
+    
+    int squareX = (mouseX - this->gridX) / this->squareSize;
+    int squareY = (mouseY - this->gridY) / this->squareSize;
+    
+    //makes sure tile is in bounds
+    if(squareX < 0 || this->gridXDim <= squareX){
+        return;
+    }
+
+    if(squareY < 0 || this->gridYDim <= squareY){
+        return;
+    }
+    
+    //prevents multiple updates on hold
+    if(squareX == selector->tilePaintedX && squareY == selector->tilePaintedY){
+        return;
+    }
+
+    selector->effectingGrid = true;
+
     selector->tilePaintedX = squareX;
     selector->tilePaintedY = squareY;
-
-    selector->brushing = true;
     
-    //deals with brush size     o
-    // creates                o o o
-    //                      o o o o o
-    //                        o o o
-    //                          o
-    //
+   drawDiamond(squareX, squareY, selector->brushWidth, selector, undoSystem);
+}
+
+// draws a diamond on the grid
+//                          o
+// creates                o o o
+//                      o o o o o
+//                        o o o
+//                          o
+//
+void Grid::drawDiamond(int xIndex, int yIndex, int radius, GridSelector* selector, UndoSystem* undoSystem){
+    if(radius < 1){
+        return;
+    }
+
     //makes center
-    drawSquare(squareX, squareY, selector, undoSystem);
+    drawSquare(xIndex, yIndex, selector, undoSystem);
     //makes wings
     for(int i = 1; i < selector->brushWidth; i++){
-        drawSquare(squareX + i, squareY, selector, undoSystem);
-        drawSquare(squareX - i, squareY, selector, undoSystem);
-        drawSquare(squareX, squareY + i, selector, undoSystem);
-        drawSquare(squareX, squareY - i, selector, undoSystem);
+        drawSquare(xIndex + i, yIndex, selector, undoSystem);
+        drawSquare(xIndex - i, yIndex, selector, undoSystem);
+        drawSquare(xIndex, yIndex + i, selector, undoSystem);
+        drawSquare(xIndex, yIndex - i, selector, undoSystem);
     }
     //makes corners
     for(int i = 1; i < selector->brushWidth; i++){
-
         for(int j = 1; j < selector->brushWidth - i; j++){
+            drawSquare(xIndex + j, yIndex + i, selector, undoSystem);
+            drawSquare(xIndex + j, yIndex - i, selector, undoSystem);
 
-            drawSquare(squareX + j, squareY + i, selector, undoSystem);
-            drawSquare(squareX + j, squareY - i, selector, undoSystem);
-
-            drawSquare(squareX - j, squareY + i, selector, undoSystem);
-            drawSquare(squareX - j, squareY - i, selector, undoSystem);
+            drawSquare(xIndex - j, yIndex + i, selector, undoSystem);
+            drawSquare(xIndex - j, yIndex - i, selector, undoSystem);
         }
     }
 }
 
-//changes the color of a specific square
-void Grid::drawSquare(int xIndex, int yIndex, Selector* selector, UndoSystem* undoSystem){
+
+
+void Grid::drawSquare(int xIndex, int yIndex, GridSelector* selector, UndoSystem* undoSystem){
     
     if(xIndex < 0 || this->gridXDim <= xIndex){
         return;
@@ -151,11 +233,24 @@ Color Grid::getColor(int xIndex, int yIndex){
     return this->squareGrid[xIndex][yIndex].getColor();
 }
 
-void Grid::releaseTheFlood(RenderWindow* window, Selector* selector, UndoSystem* undoSystem){
+void Grid::releaseTheFlood(RenderWindow* window, GridSelector* selector, UndoSystem* undoSystem){
     int xTile = this->getMouseOnXTile(window);
     int yTile = this->getMouseOnYTile(window);
+
+    //makes sure valid tile
+    if(xTile <= 0 || this->gridXDim <= xTile){
+        return;
+    }
+
+    if(yTile <= 0 || this->gridYDim <= yTile){
+        return;
+    }
+
+    selector->effectingGrid = true;
+
     Color newColor = selector->selectedColor;
     Color oldColor = this->getColor(xTile, yTile);
+
     this->flood(xTile, yTile, oldColor, newColor, undoSystem);
 }
 
@@ -178,6 +273,7 @@ void Grid::flood(int xIndex, int yIndex,
         return;
     }
 
+    //need if newColor is equal to old color
     if(squareColor == newColor){
         return;
     }
@@ -228,7 +324,7 @@ int Grid::getMouseOnYTileNoCheck(RenderWindow* window){
 }
 
 void Grid::drawLine(int xStart, int yStart, int xEnd, int yEnd, 
-    Selector* selector, UndoSystem* UndoSystem){
+    GridSelector* selector, UndoSystem* UndoSystem){
     
     int thickness = selector->brushWidth;
     float slope = float(yEnd - yStart) / float(xEnd - xStart);

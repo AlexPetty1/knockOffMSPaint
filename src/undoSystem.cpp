@@ -20,13 +20,9 @@ UndoSystem::UndoSystem(int amountOfSaves){
 
 void UndoSystem::printSystem(){
 
-    int max = 5;
     for(int i = 0; i < this->saves.size(); i++){
         std::cout << "Save: " << i << " \n";
         for(int j = 0; j < this->saves[i].size(); j++){
-            if(j == max){
-                break;
-            }
 
             GridSquareSave save = this->saves[i][j];
             std::cout << save.x << " " << save.y << " " << save.color.toInteger() << "\n";
@@ -40,7 +36,6 @@ void UndoSystem::commitSave(){
     if(currentSave >= amountOfSaves){
         currentSave = 0;
     }
-
 
     frontSave = currentSave;
 
@@ -80,10 +75,7 @@ void UndoSystem::addToCurrentSave(GridSquareSave* square){
     }
     this->squaresInSave.insert(pairSquare);
 
-    
-    //adds new
-    saves[this->currentSave].push_back(*square);
-    
+    saves[this->currentSave].push_back(*square);    
 };
 
 UndoSystem::~UndoSystem(){

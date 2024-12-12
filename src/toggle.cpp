@@ -1,11 +1,11 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 
-#include "button.h"
+#include "toggle.h"
 
 using namespace sf;
 
-Button::Button(int x, int y, int lengthX, int lengthY, String text, int value){
+Toggle::Toggle(int x, int y, int lengthX, int lengthY, String text, int value){
     this->fonts = Font();
     this->fonts.loadFromFile("fonts/OpenSans-Bold.ttf");
 
@@ -19,7 +19,7 @@ Button::Button(int x, int y, int lengthX, int lengthY, String text, int value){
     this->shape = RectangleShape(Vector2f(float(lengthX), float(lengthY)));
     this->shape.setPosition(float(x), float(y));
     this->shape.setFillColor(defaultUnSelectColor);
-    this->shape.setOutlineColor(defaultBorderColor);
+    this->shape.setOutlineColor(defaultBorderUnselectColor);
     this->shape.setOutlineThickness(float(defaultBorderWidth));
 
     this->text = Text(text, this->fonts, defaultCharacterSize);
@@ -31,11 +31,11 @@ Button::Button(int x, int y, int lengthX, int lengthY, String text, int value){
     this->isSelected = 0;
 };
 
-// tests if the button is clicked, assumes mouse is already down
+// tests if the Toggle is clicked, assumes mouse is already down
 //      returns -1 if not clicked
-//      returns the value assigned to the button if clicked
-//      switches buttons color and state if clicked
-int Button::isClicked(RenderWindow* window){
+//      returns the value assigned to the Toggle if clicked
+//      switches Toggles color and state if clicked
+int Toggle::isClicked(RenderWindow* window){
     int mouseX = Mouse::getPosition(*window).x;
     int mouseY = Mouse::getPosition(*window).y;
 
@@ -56,53 +56,62 @@ int Button::isClicked(RenderWindow* window){
     return this->value;
 }
 
-void Button::setValue(int value){
+void Toggle::setValue(int value){
     this->value = value;
 }
 
-void Button::select(){
+void Toggle::select(){
     this->shape.setFillColor(this->selectColor);
     this->text.setFillColor(this->unSelectColor);
+    this->shape.setOutlineColor(this->defaultBorderSelectColor);
     this->isSelected = 1;
 }
 
-void Button::setSelectColor(Color newColor){
-    this->selectColor = newColor;
-}
-
-void Button::setUnSelectColor(Color newColor){
-    this->unSelectColor = newColor;
-}
-
-void Button::unselect(){
+void Toggle::unselect(){
     this->shape.setFillColor(this->unSelectColor);
     this->text.setFillColor(this->selectColor);
+    this->shape.setOutlineColor(this->defaultBorderUnselectColor);
     this->isSelected = 0;
 }
 
-void Button::display(RenderWindow* window){
+void Toggle::setSelectColor(Color newColor){
+    this->selectColor = newColor;
+}
+
+void Toggle::setUnSelectColor(Color newColor){
+    this->unSelectColor = newColor;
+}
+
+void Toggle::display(RenderWindow* window){
     this->text.setFont(this->fonts);   //the text will not load if only loading font in constructor
                                             //  so it loads here as well
     window->draw(this->shape);
     window->draw(this->text);
 }
 
-int Button::getWidth(){
+int Toggle::getWidth(){
     return this->lengthX;
 }
 
-int Button::getHeight(){
+int Toggle::getHeight(){
     return this->lengthX;
 }
 
-void Button::setXY(int x, int y){
+int Toggle::getValue(){
+    return this->value;
+}
+
+void Toggle::setXY(int x, int y){
     this->x = x;
     this->y = y;
     this->shape.setPosition(float(x), float(y));
     this->text.setPosition(float(this->x + 5), float(this->y + 5));
 }
 
+void Toggle::setFontSize(int size){
+    this->text.setCharacterSize(size);
+}
 
 
-Button::~Button(){
+Toggle::~Toggle(){
 }

@@ -5,31 +5,13 @@
 #include <SFML/Window.hpp>
 #include <SFML/System.hpp>
 
-#include "ColorSelector.h"
-#include "BrushSizeSelector.h"
 #include "GridSquare.h"
 #include "undoSystem.h"
+#include "gridSelector.h"
 
 #include <set>
 
 using namespace sf;
-
-struct Selector{
-    bool held;
-    bool brushing;
-    int brushWidth;
-    Color selectedColor;
-    ColorSelector* currentColorSelector;                //current color selector activated
-    BrushSizeSelector* currentBrushSelector;
-    int mode;           // 0: brush
-                        // 1: flood
-                        // 2: select
-                        // 3: pointer
-
-    int tilePaintedX;   //stores x of tile your painting, -1 painting nothing
-    int tilePaintedY;   //prevents multiple updates if holding down
-};
-
 
 class Grid{
 
@@ -49,20 +31,23 @@ class Grid{
         //used for undo
         void autoAdd(std::vector<GridSquareSave> squares);
 
-        void selectOnGrid(RenderWindow* window, Selector* selector, UndoSystem* undoSystem);
+        void selectOnGrid(RenderWindow* window, GridSelector* selector, UndoSystem* undoSystem);
+        void brushOnGrid(RenderWindow* window, GridSelector* selector, UndoSystem* undoSystem);
+        
+        void drawDiamond(int xIndex, int yIndex, int radius, GridSelector* selector, UndoSystem* undoSystem);
 
-        //changes the color of a specific square
-        void drawSquare(int xIndex, int yIndex, Selector* selector, UndoSystem* undoSystem);
+        void drawSquare(int xIndex, int yIndex, GridSelector* selector, UndoSystem* undoSystem);
         void drawSquareColor(int xIndex, int yIndex, Color newColor, UndoSystem* undoSystem);
         Color getColor(int xIndex, int yIndex);
 
+        void selectDrawLine(RenderWindow* window, GridSelector* selector, UndoSystem* UndoSystem);
         void drawLine(int xStart, int yStart, int xEnd, int yEnd, 
-            Selector* selector, UndoSystem* UndoSystem);
+            GridSelector* selector, UndoSystem* UndoSystem);
 
         void flood(int xIndex, int yIndex, Color oldColor, 
             Color newColor, UndoSystem* UndoSystem);
         
-        void releaseTheFlood(RenderWindow* window, Selector* selector, UndoSystem* undoSystem);
+        void releaseTheFlood(RenderWindow* window, GridSelector* selector, UndoSystem* undoSystem);
 
         int getMouseOnXTile(RenderWindow* window);
         int getMouseOnYTile(RenderWindow* window);
